@@ -18,6 +18,7 @@ class HookMessageSeverity(StrEnum):
 
 
 class HookType(StrEnum):
+    PRE_AGENT = auto()
     POST_AGENT = auto()
     PRE_TOOL = auto()
     POST_TOOL = auto()
@@ -77,11 +78,11 @@ class HookConfig(BaseModel):
 
     @model_validator(mode="after")
     def _apply_defaults_and_constraints(self) -> Self:
-        if self.match is not None and self.type == HookType.POST_AGENT:
+        if self.match is not None and self.type in {HookType.PRE_AGENT, HookType.POST_AGENT}:
             raise ValueError(
                 "match is only valid for tool hooks (pre_tool / post_tool)"
             )
-        if self.strict and self.type == HookType.POST_AGENT:
+        if self.strict and self.type in {HookType.PRE_AGENT, HookType.POST_AGENT}:
             raise ValueError(
                 "strict is only valid for tool hooks (pre_tool / post_tool)"
             )
@@ -141,6 +142,10 @@ class PostAgentInvocation(HookSessionContext):
     hook_event_name: Literal[HookType.POST_AGENT] = HookType.POST_AGENT
 
 
+class PreAgentInvocation(HookSessionContext):
+    hook_event_name: Literal[HookType.PRE_AGENT] = HookType.PRE_AGENT
+
+
 class PreToolInvocation(HookSessionContext):
     hook_event_name: Literal[HookType.PRE_TOOL] = HookType.PRE_TOOL
     tool_name: str
@@ -160,7 +165,7 @@ class PostToolInvocation(HookSessionContext):
     duration_ms: float
 
 
-HookInvocation = PostAgentInvocation | PreToolInvocation | PostToolInvocation
+HookInvocation = PreAgentInvocation | PostAgentInvocation | PreToolInvocation | PostToolInvocation
 
 
 def build_invocation(
@@ -179,6 +184,8 @@ def build_invocation(
     """Build the right HookInvocation subclass for *hook_type*."""
     base = ctx.model_dump()
     match hook_type:
+        case HookType.PRE_AGENT:
+            return PreAgentInvocation(**base)
         case HookType.POST_AGENT:
             return PostAgentInvocation(**base)
         case HookType.PRE_TOOL:

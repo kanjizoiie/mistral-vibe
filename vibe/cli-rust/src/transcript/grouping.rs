@@ -178,11 +178,11 @@ fn hook_line_mounts(detail: &NoticeDetail, prior: &[StoredEntry]) -> bool {
     content && name && container_open(detail, prior)
 }
 
-/// Python `_hook_container_key`: the post-agent run keys the whole turn, the
+/// Python `_hook_container_key`: the pre-agent and post-agent runs key the whole turn, the
 /// tool-scoped runs key on the tool call id.
 fn container_key(detail: &NoticeDetail) -> String {
     match detail.scope.as_deref() {
-        Some("post_agent") => "agent_turn".to_owned(),
+        Some("pre_agent") | Some("post_agent") => "agent_turn".to_owned(),
         scope => format!(
             "{}:{}",
             scope.unwrap_or(""),

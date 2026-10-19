@@ -16,6 +16,7 @@ from vibe.core.hooks._handler import (
 )
 from vibe.core.hooks._post_agent import PostAgentHandler
 from vibe.core.hooks._post_tool import PostToolHandler
+from vibe.core.hooks._pre_agent import PreAgentHandler
 from vibe.core.hooks._pre_tool import PreToolHandler
 from vibe.core.hooks.config import HookConfig
 from vibe.core.hooks.executor import HookExecutor
@@ -35,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 _HANDLERS: dict[HookType, HookHandler] = {
+    HookType.PRE_AGENT: PreAgentHandler(),
     HookType.POST_AGENT: PostAgentHandler(),
     HookType.PRE_TOOL: PreToolHandler(),
     HookType.POST_TOOL: PostToolHandler(),
